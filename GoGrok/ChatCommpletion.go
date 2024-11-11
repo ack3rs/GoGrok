@@ -1,14 +1,32 @@
 package GoGrok
 
-import "GoGrok/environment"
+import (
+	"encoding/json"
+	"fmt"
+	l "log/slog"
 
-func GetChatCompletion(messages Messages) {
-    
-    server := environment.GetEnvString("XAI_SERVER", "https://api.x.ai")
-    
-    request, t, x := webRequest(server + "/v1/chat/completions")
-    environment.Dump(request)
-    environment.Dump(t)
-    environment.Dump(x)
-    
+	"GoGrok/environment"
+)
+
+func GetChatCompletion(messages Messages) MessageResponse {
+
+	out := MessageResponse{}
+	server := environment.GetEnvString("XAI_SERVER", "https://api.x.ai")
+
+	payload, err := json.Marshal(messages)
+	if err != nil {
+		fmt.Println("Error marshaling messages:", err)
+		l.With("Error", err).Error("Error marshaling payload")
+		return out
+	}
+
+	request, _, _ := webRequest(server+"/v1/chat/completions", payload)
+
+	err = json.Unmarshal(request, &out)
+	if err != nil {
+		l.With("Error", err).Error("Error unmarshaling response")
+		return MessageResponse{}
+	}
+
+	return out
 }
