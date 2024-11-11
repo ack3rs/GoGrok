@@ -4,6 +4,8 @@ import (
     "io"
     l "log/slog"
     "net/http"
+    
+    "GoGrok/environment"
 )
 
 func webRequest(url string) ([]byte, int, error) {
@@ -11,7 +13,9 @@ func webRequest(url string) ([]byte, int, error) {
     for i := 0; i < 3; i++ {
         
         client := &http.Client{}
-        r, _ := http.NewRequest("GET", url, nil)
+        r, _ := http.NewRequest("POST", url, nil)
+        r.Header.Add("Content-Type", "application/json")
+        r.Header.Add("Authorization", "Bearer"+environment.GetEnvString("XAI_API_KEY", ""))
         
         resp, err := client.Do(r)
         if err != nil {
